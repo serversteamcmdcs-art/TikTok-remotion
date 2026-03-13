@@ -1,7 +1,7 @@
-import { Composition } from 'remotion';
+import { Composition, registerRoot } from 'remotion';
 import { TikTokVideo } from './TikTokVideo';
 
-export const RemotionRoot = () => {
+const Root = () => {
   return (
     <Composition
       id="TikTok"
@@ -17,3 +17,5 @@ export const RemotionRoot = () => {
     />
   );
 };
+
+registerRoot(Root);
