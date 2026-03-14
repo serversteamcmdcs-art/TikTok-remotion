@@ -18,8 +18,8 @@ app.post('/render', upload.single('audio'), (req, res) => {
   const words = text.split(' ');
   let srt = '';
   words.forEach((word, i) => {
-    const start = i * 0.5;
-    const end = start + 0.5;
+    const start = i * 0.8;
+    const end = start + 0.8;
     const fmt = s => {
       const m = Math.floor(s / 60);
       const sec = (s % 60).toFixed(3).replace('.', ',').padStart(6, '0');
