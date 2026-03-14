@@ -46,12 +46,13 @@ app.post('/render', upload.fields([
     const renderVideo = (inputPath, isVideo) => {
       const cmd = ffmpeg();
       if (isVideo) {
-        cmd.input(inputPath);
-      } else {
-        cmd.input('color=c=0x0a0a0f:size=480x854:rate=24')
-          .inputOptions(['-f lavfi']);
-      }
-      cmd.input(audioPath)
+        cmd.input(inputPath)
+          .inputOptions(['-stream_loop -1']);
+  } else {
+    cmd.input(`color=c=0x0a0a0f:size=480x854:rate=24`)
+      .inputOptions(['-f lavfi', `-t ${duration}`]);
+  }
+  cmd.input(audioPath)
         .outputOptions([
           '-c:v libx264',
           '-preset ultrafast',
