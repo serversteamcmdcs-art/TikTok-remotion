@@ -16,10 +16,12 @@ app.post('/render', upload.single('audio'), (req, res) => {
   const srtPath = `uploads/sub_${Date.now()}.srt`;
 
   const words = text.split(' ');
+  const duration = parseFloat(req.body.duration) || words.length * 0.6;
+  const timePerWord = duration / words.length;
   let srt = '';
   words.forEach((word, i) => {
-    const start = i * 0.8;
-    const end = start + 0.8;
+    const start = i * timePerWord;
+    const end = start + timePerWord;
     const fmt = s => {
       const m = Math.floor(s / 60);
       const sec = (s % 60).toFixed(3).replace('.', ',').padStart(6, '0');
