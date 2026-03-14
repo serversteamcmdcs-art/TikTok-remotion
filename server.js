@@ -2,24 +2,10 @@ const express = require('express');
 const multer = require('multer');
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
-const path = require('path');
-const https = require('https');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 if (!fs.existsSync('outputs')) fs.mkdirSync('outputs');
-if (!fs.existsSync('backgrounds')) fs.mkdirSync('backgrounds');
-
-// Скачай фоновое видео при старте
-const BG_PATH = 'backgrounds/bg.mp4';
-const BG_URL = 'https://www.pexels.com/download/video/3141208/';
-
-function downloadBg() {
-  if (fs.existsSync(BG_PATH)) return;
-  const file = fs.createWriteStream(BG_PATH);
-  https.get(BG_URL, res => res.pipe(file));
-}
-downloadBg();
 
 app.get('/', (req, res) => res.send('OK'));
 
@@ -29,7 +15,6 @@ app.post('/render', upload.single('audio'), (req, res) => {
   const outputPath = `outputs/video_${Date.now()}.mp4`;
   const srtPath = `uploads/sub_${Date.now()}.srt`;
 
-  // Создай субтитры
   const words = text.split(' ');
   let srt = '';
   words.forEach((word, i) => {
@@ -44,17 +29,10 @@ app.post('/render', upload.single('audio'), (req, res) => {
   });
   fs.writeFileSync(srtPath, srt);
 
-  const hasBg = fs.existsSync(BG_PATH);
-
-  const cmd = ffmpeg();
-
-  if (hasBg) {
-    cmd.input(BG_PATH).inputOptions(['-stream_loop -1']);
-  } else {
-    cmd.input('color=c=0x1a1a2e:size=480x854:rate=24').inputOptions(['-f lavfi']);
-  }
-
-  cmd.input(audioPath)
+  ffmpeg()
+    .input('color=c=0x0a0a0f:size=480x854:rate=24')
+    .inputOptions(['-f lavfi'])
+    .input(audioPath)
     .outputOptions([
       '-c:v libx264',
       '-preset ultrafast',
@@ -64,7 +42,7 @@ app.post('/render', upload.single('audio'), (req, res) => {
       '-shortest',
       '-pix_fmt yuv420p',
       '-threads 1',
-      `-vf scale=480:854:force_original_aspect_ratio=decrease,pad=480:854:(ow-iw)/2:(oh-ih)/2,subtitles=${srtPath}:force_style='FontSize=18,PrimaryColour=&Hffffff&,OutlineColour=&H000000&,Outline=2,Alignment=2,Bold=1'`
+      `-vf subtitles=${srtPath}:force_style='FontSize=20,PrimaryColour=&H00ff88&,OutlineColour=&H000000&,Outline=2,Alignment=2,Bold=1,MarginV=200'`
     ])
     .output(outputPath)
     .on('end', () => {
