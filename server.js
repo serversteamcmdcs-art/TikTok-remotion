@@ -19,19 +19,24 @@ app.post('/render', upload.single('audio'), (req, res) => {
   ffmpeg.ffprobe(audioPath, (err, metadata) => {
     const duration = metadata?.format?.duration || 30;
     const words = text.split(' ');
-    const timePerWord = duration / words.length;
+    const wordsPerChunk = 3;
+    const chunks = [];
+    for (let i = 0; i < words.length; i += wordsPerChunk) {
+      chunks.push(words.slice(i, i + wordsPerChunk).join(' '));
+}
+    const timePerChunk = duration / chunks.length;
 
     let srt = '';
-    words.forEach((word, i) => {
-      const start = i * timePerWord;
-      const end = start + timePerWord;
+    chunks.forEach((chunk, i) => {
+      const start = i * timePerChunk;
+      const end = start + timePerChunk;
       const fmt = s => {
         const m = Math.floor(s / 60);
         const sec = (s % 60).toFixed(3).replace('.', ',').padStart(6, '0');
         return `00:${String(m).padStart(2,'0')}:${sec}`;
-      };
-      srt += `${i+1}\n${fmt(start)} --> ${fmt(end)}\n${word}\n\n`;
-    });
+  };
+  srt += `${i+1}\n${fmt(start)} --> ${fmt(end)}\n${chunk}\n\n`;
+});
     fs.writeFileSync(srtPath, srt);
 
     ffmpeg()
