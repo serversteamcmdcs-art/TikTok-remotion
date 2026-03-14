@@ -46,8 +46,8 @@ app.post('/render', upload.fields([
 
     if (bgPath) {
       cmd.input(bgPath)
-        .inputOptions(['-loop 1']);
-    } else {
+        .inputOptions(['-loop 1', '-framerate 24']);
+ } else {
       cmd.input('color=c=0x0a0a0f:size=480x854:rate=24')
         .inputOptions(['-f lavfi']);
     }
